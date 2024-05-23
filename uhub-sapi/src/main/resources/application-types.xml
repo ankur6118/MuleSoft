@@ -1,0 +1,99 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="register-covid-case-request-payload" format="json">
+      <types:shape format="weave" example="examples/register-covid-case-request-payload[1].json"><![CDATA[%dw 2.0
+
+type register_covid_case_request_payload = {|
+  source: String, 
+  caseType: String, 
+  firstName: String, 
+  lastName: String, 
+  phone: String, 
+  email: String, 
+  dateOfBirth: String, 
+  nationalID: String, 
+  nationalIDType: String, 
+  address: {|
+    streetAddress: String, 
+    city: String, 
+    state: String, 
+    postal: String, 
+    country: String
+  |}
+|} {"example": "{\\\"source\\\":\\\"Hospital1\\\",\\\"caseType\\\":\\\"positive\\\",\\\"firstName\\\":\\\"John\\\",\\\"lastName\\\":\\\"Nixon\\\",\\\"phone\\\":\\\"541-754-3010\\\",\\\"email\\\":\\\"john@gmail.com\\\",\\\"dateOfBirth\\\":\\\"1989-04-26\\\",\\\"nationalID\\\":\\\"209-49-6193\\\",\\\"nationalIDType\\\":\\\"SSN\\\",\\\"address\\\":{\\\"streetAddress\\\":\\\"1600 Pennsylvania Avenue NW\\\",\\\"city\\\":\\\"Dallas\\\",\\\"state\\\":\\\"TX\\\",\\\"postal\\\":\\\"20500\\\",\\\"country\\\":\\\"USA\\\"}}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="who-covid-case-request-payload" format="xml">
+      <types:example format="xml" element="COVID_CASE" location="examples/who-covid-case-request-payload[1].xml"/>
+    </types:type>
+    <types:type name="update-covid-case-payload" format="xml">
+      <types:example format="xml" element="covidCase" location="examples/update-covid-case-payload[1].xml"/>
+    </types:type>
+    <types:type name="DbInsertion" format="java">
+      <types:shape format="raml"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="register-covid-case-response-payload" format="json">
+      <types:shape format="weave" example="examples/uhub-sapi-register-covid-case-response[1].json"><![CDATA[%dw 2.0
+
+type register_covid_case_response_payload = {| caseID: String |} {"example": "{\\\"caseID\\\":\\\"3673673\\\"}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="statusCode" format="java">
+      <types:shape format="raml"><![CDATA[#%RAML 1.0 DataType
+type: string]]></types:shape>
+    </types:type>
+    <types:type name="update-covid-case-response-payload" format="xml">
+      <types:example format="xml" element="case" location="examples/update-covid-case-reponse-payload.xml"/>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#2b462702-1930-445a-a5b2-0a903710a254">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="update-covid-case-payload"/>
+        </types:message>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#a289b04b-faa4-477b-80b6-f6fe91bf8d4c">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="register-covid-case-request-payload"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:variables>
+          <types:variable name="regiserCase" type="register-covid-case-request-payload"/>
+        </types:variables>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#2dbde86f-cc46-4896-be5f-bd905db68701">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="register-covid-case-response-payload"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#c99295a0-d980-4bbc-97e8-c647a7b113ad">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="update-covid-case-response-payload"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#4d89d2d0-3b39-415d-81b0-7fdd46e58c1b"/>
+  <types:enrichment select="#c28cc77b-ee4a-4d82-b56e-e266d60195b6"/>
+  <types:enrichment select="#cc037943-3a1a-4fe7-a107-41611ab805de"/>
+  <types:enrichment select="#d53c44b0-d1dd-4fa7-b354-31014744b0f7"/>
+  <types:enrichment select="#53267a8c-ac5d-44a1-8785-75a2dd96ea10"/>
+</types:mule>

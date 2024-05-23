@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd">
+	<flow name="hi-mule-apiFlow1" doc:id="a034f574-4d20-4e3f-b3a8-404421ea6629">
+		<http:listener doc:name="Listener" doc:id="b75eea1c-9b8a-4fda-8925-52433748db91" config-ref="HTTP_Listener_config1" path="mule"/>
+		<logger level="INFO" doc:name="Logger" doc:id="71846dd8-dec3-4731-be16-a7a0e4aed602" message="HI kaise ho applog"/>
+	</flow>
+</mule>

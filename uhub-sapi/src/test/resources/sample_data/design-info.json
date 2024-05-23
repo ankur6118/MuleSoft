@@ -1,0 +1,17 @@
+{
+  "sampleData": {
+    "2b462702-1930-445a-a5b2-0a903710a254": {
+      "payload": "sample_data/covidcase.xml"
+    },
+    "091d8571-8d32-4dc4-9f0a-f133f9ad913a": {
+      "payload": "sample_data/json.json"
+    },
+    "5d0eee55-b8da-4ca5-829b-f12738ecd9a9": {
+      "vars-regiserCase": "sample_data/java_1.dwl",
+      "payload": "sample_data/java.dwl"
+    },
+    "c99295a0-d980-4bbc-97e8-c647a7b113ad": {
+      "vars-covidCasePayload": "sample_data/java_2.dwl"
+    }
+  }
+}

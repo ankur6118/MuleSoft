@@ -1,0 +1,134 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="BookMetaDataJson" format="json">
+      <types:shape format="weave" example="examples/book[1].json"><![CDATA[%dw 2.0
+
+type BookMetaDataJson = {|
+  item: {|
+    "type": String, 
+    price: Number {"typeId": "int"}, 
+    properties: {|
+      title: String, 
+      author: Array<String>, 
+      year: Number {"typeId": "int"}, 
+      lungage: String
+    |}
+  |}
+|} {"example": "{\\\"item\\\":{\\\"type\\\":\\\"book\\\",\\\"price\\\":30,\\\"properties\\\":{\\\"title\\\":\\\"Everyday Italian\\\",\\\"author\\\":[\\\"Giada De Laurentiis\\\"],\\\"year\\\":2005,\\\"lungage\\\":\\\"en\\\"}}}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="BookMetaDataXML" format="xml">
+      <types:example format="xml" element="book" location="examples/book[1].xml"/>
+    </types:type>
+    <types:type name="EmplyeeMetaDataJson" format="json">
+      <types:shape format="weave" example="examples/employee[1].json"><![CDATA[%dw 2.0
+
+type EmplyeeMetaDataJson = {|
+  empID: Number {"typeId": "int"}, 
+  empName: String, 
+  empEmail: String, 
+  empStatus: String
+|} {"example": "{\\\"empID\\\":78788,\\\"empName\\\":\\\"Chinna\\\",\\\"empEmail\\\":\\\"chinna.mulesoft@gmail.com\\\",\\\"empStatus\\\":\\\"A\\\"}"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="EmployeeSchema" format="xml">
+      <types:shape format="xml-schema" element="employee" location="schemas/employee_schema[1].xsd"/>
+    </types:type>
+    <types:type name="BookMetaDataCSV" format="csv">
+      <types:shape format="weave"><![CDATA[%dw 2.0
+
+type BookMetaDataCSV = Array<{|  BookTitle: String,   Price: String,   Author: String,   Language: String,   AuthorLocation: String|}> {"isQuotedString": "false",
+"header": "true",
+"headerLineNumber": "0"}
+
+]]></types:shape>
+      <types:properties>
+        <types:property name="headerLineNumber" value="0"/>
+        <types:property name="header" value="true"/>
+        <types:property name="isQuotedString" value="false"/>
+      </types:properties>
+    </types:type>
+    <types:type name="EmployeeCSV" format="csv">
+      <types:shape format="weave" example="examples/employee[1].csv"><![CDATA[%dw 2.0
+
+type EmployeeCSV = Array<{|  empID: String,   empName: String,   empEmail: String,   empStatus: String|}> {"isQuotedString": "false",
+"header": "true",
+"headerLineNumber": "0"}
+
+]]></types:shape>
+      <types:properties>
+        <types:property name="headerLineNumber" value="0"/>
+        <types:property name="header" value="true"/>
+        <types:property name="isQuotedString" value="false"/>
+      </types:properties>
+    </types:type>
+    <types:type name="EmployeeMetaDataXLXS" format="excel">
+      <types:shape format="weave"><![CDATA[%dw 2.0
+
+type EmployeeMetaDataXLXS = {|
+  EmployeeDetails?: Array<{|    empID: String,     empName: String,     empEmail: String,     empStatus: String  |}>
+|}
+
+]]></types:shape>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#21936413-8830-482c-8fe2-7687e5693909">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="BookMetaDataJson"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="BookMetaDataCSV"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#4a3ef0b4-318c-425d-8763-4db85c4a7e7d">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="EmplyeeMetaDataJson"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="EmployeeSchema"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#04e849bc-dedc-4533-810f-f9278b25d1be">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="EmployeeCSV"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="EmplyeeMetaDataJson"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#5d881244-5078-4991-87b9-e375514e2ecc">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="EmplyeeMetaDataJson"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="EmployeeMetaDataXLXS"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

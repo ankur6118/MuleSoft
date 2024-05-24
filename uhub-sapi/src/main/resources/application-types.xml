@@ -91,9 +91,27 @@ type: string]]></types:shape>
       </types:output-event>
     </types:processor-declaration>
   </types:enrichment>
-  <types:enrichment select="#4d89d2d0-3b39-415d-81b0-7fdd46e58c1b"/>
-  <types:enrichment select="#c28cc77b-ee4a-4d82-b56e-e266d60195b6"/>
-  <types:enrichment select="#cc037943-3a1a-4fe7-a107-41611ab805de"/>
-  <types:enrichment select="#d53c44b0-d1dd-4fa7-b354-31014744b0f7"/>
-  <types:enrichment select="#53267a8c-ac5d-44a1-8785-75a2dd96ea10"/>
+  <types:enrichment select="#503d105f-dc39-4af7-8e8c-7c1364439c51">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:variables>
+          <types:variable name="inputPayload" type="register-covid-case-request-payload"/>
+        </types:variables>
+      </types:input-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#4d89d2d0-3b39-415d-81b0-7fdd46e58c1b">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="update-covid-case-payload"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:variables>
+          <types:variable name="inputPayload" type="update-covid-case-payload"/>
+        </types:variables>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
 </types:mule>

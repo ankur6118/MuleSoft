@@ -7,7 +7,9 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
 	<db:config name="Database_Config" doc:name="Database Config" doc:id="2c06d0c7-025c-4170-a05d-65008f4dbff7" >
-		<db:oracle-connection host="localhost" user="system" password="tiger" instance="XE" />
+		<db:oracle-connection host="localhost" user="system" password="tiger" instance="XE" >
+			<db:pooling-profile maxPoolSize="8" />
+		</db:oracle-connection>
 	</db:config>
 	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="8895658e-b5c3-41a0-baac-4e3207d82577" basePath="emp-sapi" >
 		<http:listener-connection host="0.0.0.0" port="8091" />

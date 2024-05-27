@@ -93,6 +93,28 @@ output application/json
 			</ee:variables>
 		</ee:transform>
 		<logger level="INFO" doc:name="End Logger" doc:id="d5000a3e-b211-49e2-902a-57692f99822a" message="#[payload]"/>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="6b80ce77-df5c-4967-9c43-f69f18d4777b" type="JSON:SCHEMA_NOT_HONOURED">
+				<ee:transform doc:name="Transform Message" doc:id="461f74b3-3c4b-4fce-b3a6-d1a274900c88" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+   "code":400,
+   "message":"Bad request",
+   "description":error.errorMessage.payload.message[0] as String,
+   "dateTime":now() as String { format: "yyyy-MM-dd'T'HH:mm:ss'Z'" },
+   "transactionId":vars.transactionId
+}
+]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="errorResponseCode" ><![CDATA[400]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</on-error-continue>
+		</error-handler>
 	</flow>
 	<flow name="register-covid-caseFlow1" doc:id="e0e84ab9-554a-42da-8499-85b703752fc7" >
 		<logger level="INFO" doc:name="Logger" doc:id="b588b127-5f67-44dc-8a87-4264af233c67" />

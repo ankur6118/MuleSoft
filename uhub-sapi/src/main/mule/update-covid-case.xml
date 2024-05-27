@@ -11,8 +11,8 @@ http://www.mulesoft.org/schema/mule/xml-module http://www.mulesoft.org/schema/mu
 	<flow name="update-covid-caseFlow" doc:id="52a07373-fd47-457d-91c3-1fcba90afe34" >
 		<http:listener doc:name="Listener" doc:id="cda62671-27a4-4c12-a949-954c82cf5007" config-ref="HTTP_Listener_config" path="v1/cases" allowedMethods="PUT">
 			<http:response statusCode="#[vars.statusCode]" reasonPhrase="#[vars.statusResponse]" />
-			<http:error-response >
-				<http:body ><![CDATA[#[output text/plain --- error.errorMessage.payload[0].description]]]></http:body>
+			<http:error-response statusCode="#[vars.errorResponseCode]">
+				<http:body ><![CDATA[#[payload]]]></http:body>
 			</http:error-response>
 		</http:listener>
 		<ee:transform doc:name="set TransactionId and Corelation Id" doc:id="4d89d2d0-3b39-415d-81b0-7fdd46e58c1b" >
@@ -93,5 +93,28 @@ else{
 			</ee:variables>
 		</ee:transform>
 		<logger level="INFO" doc:name="End Log" doc:id="a3db64f8-f7b8-4abe-9513-4e9b137946dc" message='transactionID: #[vars.transactionId], correlationID: #[vars.corelationId], message: "CaseId is updated Successfully", payload: #[payload]'/>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="25b0bf1b-fe24-4527-9855-539660770bc8" type="XML-MODULE:SCHEMA_NOT_HONOURED">
+				<logger level="INFO" doc:name="Logger" doc:id="03916193-a43b-49f6-b842-0c718ebf9438" message='"Error Occurred"'/>
+				<ee:transform doc:name="Transform Message" doc:id="6bf9d631-4f5b-4270-b24b-5f9d45541bb0" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+   "code":400,
+   "message":"Bad request",
+   "description":error.errorMessage.payload[0].description,
+   "dateTime":now() as String { format: "yyyy-MM-dd'T'HH:mm:ss'Z'" },
+   "transactionId":vars.transactionId
+}
+]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="errorResponseCode" ><![CDATA[400]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
 	</flow>
 </mule>

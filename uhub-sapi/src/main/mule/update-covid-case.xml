@@ -66,10 +66,7 @@ output application/java
 }]]></ee:set-variable>
 			</ee:variables>
 		</ee:transform>
-		<db:update doc:name="Update the caseId details" doc:id="2203cc81-01e1-4e11-9d61-5e583a696c4d" config-ref="Database_Config">
-			<db:sql ><![CDATA[update cvd_case_master set source=:source, case_type=:case_type, first_name=:first_name, last_name=:last_name, phone=:phone, email=:email, date_of_birth=TO_DATE(:date_of_birth, 'YYYY-MM-DD'), national_id=:national_id, national_id_type=:national_id_type, street_address=:street_address, city=:city, state=:state, postal=:postal, country=:country, update_date=TO_DATE(:update_date, 'YYYY-MM-DD'), create_by=:create_by, update_by=:update_by where case_id=:case_id]]></db:sql>
-			<db:input-parameters ><![CDATA[#[vars.covidCasePayload]]]></db:input-parameters>
-		</db:update>
+		<flow-ref doc:name="Invoke SubFlow" doc:id="288150fe-4651-495e-a6f3-5dcfcdb2b4b9" name="update-covid-caseSub_Flow"/>
 		<ee:transform doc:name="Set Response" doc:id="c99295a0-d980-4bbc-97e8-c647a7b113ad" >
 			<ee:message >
 				<ee:set-payload ><![CDATA[%dw 2.0
@@ -117,4 +114,36 @@ output application/java
 			</on-error-propagate>
 		</error-handler>
 	</flow>
+	<sub-flow name="update-covid-caseSub_Flow" doc:id="9dc391f4-7daa-4f1c-9407-0e4a15a77aef" >
+		<try doc:name="Try" doc:id="61b98eae-87a3-401a-9975-d690af9e6822" >
+			<logger level="INFO" doc:name="Start Log" doc:id="f869b767-b1e9-4c18-b86b-18b5cdafcbec" message="SubFlow log start" />
+			<db:update doc:name="Update the caseId details" doc:id="2203cc81-01e1-4e11-9d61-5e583a696c4d" config-ref="Database_Config">
+			<db:sql><![CDATA[update cvd_case_master set source=:source, case_type=:case_type, first_name=:first_name, last_name=:last_name, phone=:phone, email=:email, date_of_birth=TO_DATE(:date_of_birth, 'YYYY-MM-DD'), national_id=:national_id, national_id_type=:national_id_type, street_address=:street_address, city=:city, state=:state, postal=:postal, country=:country, update_date=TO_DATE(:update_date, 'YYYY-MM-DD'), create_by=:create_by, update_by=:update_by where case_id=:case_id]]></db:sql>
+			<db:input-parameters><![CDATA[#[vars.covidCasePayload]]]></db:input-parameters>
+		</db:update>
+			<logger level="INFO" doc:name="End Log" doc:id="130bc8f8-47b7-4b98-8977-d43c674d5347" message="SubFlow log end" />
+			<error-handler >
+				<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="7da894c8-3dcb-460a-b35f-01aa712a68f1" >
+					<ee:transform doc:name="Handle Connectivity Exception" doc:id="f4689e2e-3b1e-4f96-9b7d-fc816571f49d">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+   "code":503,
+   "message":"DB Connectivity Error",
+   "description":"The (upstream) service is temporarily   not available",
+   "dateTime":now() as String { format: "yyyy-MM-dd'T'HH:mm:ss'Z'" },
+   "transactionId":vars.transactionId
+}
+]]></ee:set-payload>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="errorResponseCode"><![CDATA[400]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+				</on-error-continue>
+			</error-handler>
+		</try>
+	</sub-flow>
 </mule>

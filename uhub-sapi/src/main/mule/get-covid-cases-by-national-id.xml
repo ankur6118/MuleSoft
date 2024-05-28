@@ -9,6 +9,9 @@ http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/
 	<flow name="get-covid-cases-by-national-idFlow" doc:id="a9d35a37-2b1d-40ee-93ef-5b1d51c32fde" >
 		<http:listener doc:name="Listener" doc:id="2d2eec0e-3d7f-405a-ab63-0d80cafbd099" config-ref="HTTP_Listener_config" path="v1/cases/{nationalID}" allowedMethods="GET">
 			<http:response statusCode="#[vars.statusCode]" />
+			<http:error-response statusCode="#[vars.errorResponseCode]" >
+				<http:body ><![CDATA[#[payload]]]></http:body>
+			</http:error-response>
 		</http:listener>
 		<ee:transform doc:name="Set CorrelationId and transactionId" doc:id="c28cc77b-ee4a-4d82-b56e-e266d60195b6" >
 			<ee:message >
@@ -54,10 +57,16 @@ payload map (covidCase, indexOfCovidCase) -> {
 					</ee:message>
 				</ee:transform>
 			</when>
-			<otherwise >
-				<ee:transform doc:name="Set Case not Found" doc:id="f7148e49-b78d-4f34-b876-3c51a9a0cfb8" >
-					<ee:message >
-						<ee:set-payload ><![CDATA[%dw 2.0
+			<otherwise>
+				<raise-error doc:name="Raise error" doc:id="ba77592b-fdea-411c-af11-2010a0cbdb36" type="CUSTOM:CASE_NOT_FOUND" description="The server has not found anything matching the Request-URI"/>
+			</otherwise>
+		</choice>
+		<logger level="INFO" doc:name="End Log" doc:id="c6f6d179-5f38-4019-a9c5-c6e10b000f94" message="Flow has ended"/>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="c775d7dd-69b3-4095-a35d-c32c9ec1526f" type="CUSTOM:CASE_NOT_FOUND">
+				<ee:transform doc:name="Set Case not Found" doc:id="f7148e49-b78d-4f34-b876-3c51a9a0cfb8">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
 output application/json
 ---
 {
@@ -68,12 +77,51 @@ output application/json
 	"transactionId": vars.transactionId
 }]]></ee:set-payload>
 					</ee:message>
-					<ee:variables >
-						<ee:set-variable variableName="statusCode" ><![CDATA[404]]></ee:set-variable>
+					<ee:variables>
+						<ee:set-variable variableName="errorResponseCode" ><![CDATA[404]]></ee:set-variable>
 					</ee:variables>
 				</ee:transform>
-			</otherwise>
-		</choice>
-		<logger level="INFO" doc:name="End Log" doc:id="c6f6d179-5f38-4019-a9c5-c6e10b000f94" message="Flow has ended"/>
+			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="4a0c2b2e-7292-4b71-9e08-11c9e17244e5" type="DB:CONNECTIVITY" >
+				<ee:transform doc:name="Bad Request" doc:id="7eb99fa1-1c5b-4f46-b8ab-51b424fc05d7" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+   "code":503,
+   "message":"Service unavailable",
+   "description":"The (upstream) service is temporarily   not available",
+   "dateTime":now() as String { format: "yyyy-MM-dd'T'HH:mm:ss'Z'" },
+   "transactionId":vars.transactionId
+}
+]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="errorResponseCode" ><![CDATA[503]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</on-error-propagate>
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="Handle Any generic Error" doc:id="b0618828-54a1-4b79-9e12-1a763db232ca" type="ANY" >
+				<ee:transform doc:name="Any Other Type of Error" doc:id="02e5dc1c-92e3-40bf-acb3-1e4586eedcfa" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+   "code":500,
+   "message":"Internal server error",
+   "description":"The server encountered an unexpected condition which prevented it from fulfilling the request",
+   "dateTime":now() as String { format: "yyyy-MM-dd'T'HH:mm:ss'Z'" },
+   "transactionId":vars.transactionId
+}
+]]></ee:set-payload>
+					</ee:message>
+					<ee:variables >
+						<ee:set-variable variableName="errorResponseCode" ><![CDATA[503]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
 	</flow>
 </mule>

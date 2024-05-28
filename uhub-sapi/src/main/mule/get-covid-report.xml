@@ -7,7 +7,11 @@ http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/htt
 http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
 http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
 	<flow name="get-covid-reportFlow" doc:id="248f232a-ea90-4639-9e1a-08616f89e8d9" >
-		<http:listener doc:name="Listener" doc:id="edd469c5-94a0-4234-83dc-3f713251f287" config-ref="HTTP_Listener_config" path="v1/reports"/>
+		<http:listener doc:name="Listener" doc:id="edd469c5-94a0-4234-83dc-3f713251f287" config-ref="HTTP_Listener_config" path="v1/reports">
+			<http:error-response statusCode="#[vars.errorResponseCode]" >
+				<http:body ><![CDATA[#[payload]]]></http:body>
+			</http:error-response>
+		</http:listener>
 		<ee:transform doc:name="Transform Message" doc:id="d53c44b0-d1dd-4fa7-b354-31014744b0f7" >
 			<ee:message >
 			</ee:message>
@@ -29,6 +33,7 @@ http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/cu
 			</ee:variables>
 		</ee:transform>
 		<db:select doc:name="Select" doc:id="6240a32f-e4fc-4d97-9a22-07521eee5ca4" config-ref="Database_Config">
+			<error-mapping sourceType="DB:CONNECTIVITY" targetType="CUSTOM:CONNECTION_FAILED" />
 			<db:sql ><![CDATA[#["$(vars.dynamicReportQuery)"]]]></db:sql>
 		</db:select>
 		<ee:transform doc:name="Transform Message" doc:id="7f7aecdb-09fd-4f74-879c-86880f2d7da3">
@@ -54,5 +59,6 @@ fun vaccinatedByState(state) = (payload filter(($.STATE == state as String) and 
 			</ee:message>
 		</ee:transform>
 		<logger level="INFO" doc:name="Logger" doc:id="eb0609a3-0131-4388-9ea7-6f3b4cf31180" message='transactionID: #[vars.transactionId]], correlationID: #[vars.correlationID], message: Completed get reports flow, payload: #[payload]"'/>
+		<error-handler ref="global-error-handlerError_Handler" />
 	</flow>
 </mule>
